@@ -93,3 +93,42 @@ export async function getEstadisticasGlobales() {
   `
   return rows[0]
 }
+
+// ─── VERSÍCULOS ESPECIALES POR CAPÍTULO ─────────────────────
+export async function getEspecialesPorCapitulo(capituloId) {
+  return await sql`
+    SELECT
+      v.id AS versiculo_id,
+      v.numero,
+      pj.tipo          AS tipo_jesus,
+      pm.tema          AS tema_mesianico,
+      jj.estado        AS estado_juicio,
+      jj.sobre         AS juicio_sobre,
+      jj.descripcion   AS juicio_descripcion,
+      pm.descripcion   AS profecia_descripcion
+    FROM versiculos v
+    LEFT JOIN palabras_jesus      pj ON v.id = pj.versiculo_id
+    LEFT JOIN profecias_mesianicas pm ON v.id = pm.versiculo_id
+    LEFT JOIN juicios_jehova       jj ON v.id = jj.versiculo_id
+    WHERE v.capitulo_id = ${capituloId}
+      AND (pj.id IS NOT NULL OR pm.id IS NOT NULL OR jj.id IS NOT NULL)
+    ORDER BY v.numero
+  `
+}
+
+export async function getContadorEspeciales(capituloId) {
+  const rows = await sql`
+    SELECT
+      COUNT(DISTINCT pj.versiculo_id) AS palabras_jesus,
+      COUNT(DISTINCT pm.versiculo_id) AS profecias_mesianicas,
+      COUNT(DISTINCT jj.versiculo_id) FILTER (WHERE jj.estado = 'cumplido')       AS juicios_cumplidos,
+      COUNT(DISTINCT jj.versiculo_id) FILTER (WHERE jj.estado = 'por_cumplirse')  AS juicios_por_cumplir,
+      COUNT(DISTINCT jj.versiculo_id) FILTER (WHERE jj.estado = 'cumplimiento_parcial') AS juicios_parciales
+    FROM versiculos v
+    LEFT JOIN palabras_jesus      pj ON v.id = pj.versiculo_id
+    LEFT JOIN profecias_mesianicas pm ON v.id = pm.versiculo_id
+    LEFT JOIN juicios_jehova       jj ON v.id = jj.versiculo_id
+    WHERE v.capitulo_id = ${capituloId}
+  `
+  return rows[0]
+}
