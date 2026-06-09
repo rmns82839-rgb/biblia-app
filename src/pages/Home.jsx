@@ -170,7 +170,7 @@ export default function Home() {
           {[
             { icon: '📖', label: 'Lector',       desc: 'Navega los 66 libros',         to: '/leer/1',   active: true },
             { icon: '🔍', label: 'Buscador',      desc: 'Busca en toda la Biblia',      to: '/buscar',   active: true },
-            { icon: '📊', label: 'Patrones',      desc: 'Análisis de frecuencias',      to: '#',         active: false },
+            { icon: '📊', label: 'Patrones',      desc: 'Análisis de frecuencias',      to: '/patrones', active: true  },
             { icon: '🕊️', label: 'Angelología',  desc: 'Ángeles en la Biblia',         to: '#',         active: false },
             { icon: '✝️', label: 'Cristología',   desc: 'Referencias mesiánicas',       to: '#',         active: false },
             { icon: '👑', label: 'Reyes',         desc: 'Línea de tiempo real',         to: '#',         active: false },

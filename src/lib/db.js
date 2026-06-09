@@ -132,3 +132,57 @@ export async function getContadorEspeciales(capituloId) {
   `
   return rows[0]
 }
+
+// ─── MÓDULO DE PATRONES ──────────────────────────────────────
+export async function getFrecuenciaPalabra(palabra) {
+  return await sql`
+    SELECT l.nombre AS libro, l.abreviatura, l.orden,
+           l.testamento, l.categoria,
+           fp.conteo
+    FROM frecuencia_palabras fp
+    JOIN libros l ON fp.libro_id = l.id
+    WHERE fp.capitulo_id IS NULL
+      AND fp.palabra = ${palabra.toLowerCase().trim()}
+    ORDER BY fp.conteo DESC
+  `
+}
+
+export async function getTopPalabrasLibro(libroId, limite = 30) {
+  return await sql`
+    SELECT fp.palabra, fp.conteo
+    FROM frecuencia_palabras fp
+    WHERE fp.libro_id = ${libroId}
+      AND fp.capitulo_id IS NULL
+      AND LENGTH(fp.palabra) >= 4
+    ORDER BY fp.conteo DESC
+    LIMIT ${limite}
+  `
+}
+
+export async function getTopPalabrasTestamento(testamento, limite = 40) {
+  return await sql`
+    SELECT fp.palabra, SUM(fp.conteo) AS conteo
+    FROM frecuencia_palabras fp
+    JOIN libros l ON fp.libro_id = l.id
+    WHERE l.testamento = ${testamento}
+      AND fp.capitulo_id IS NULL
+      AND LENGTH(fp.palabra) >= 4
+    GROUP BY fp.palabra
+    ORDER BY conteo DESC
+    LIMIT ${limite}
+  `
+}
+
+export async function getPalabraEnLibros(palabra) {
+  // Busca en qué capítulos específicos aparece una palabra
+  return await sql`
+    SELECT l.nombre AS libro, l.abreviatura, l.orden,
+           c.numero AS capitulo, fp.conteo
+    FROM frecuencia_palabras fp
+    JOIN capitulos c ON fp.capitulo_id = c.id
+    JOIN libros l    ON fp.libro_id = l.id
+    WHERE fp.palabra = ${palabra.toLowerCase().trim()}
+      AND fp.capitulo_id IS NOT NULL
+    ORDER BY l.orden, c.numero
+  `
+}

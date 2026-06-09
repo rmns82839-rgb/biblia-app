@@ -3,6 +3,7 @@ import { useState } from 'react'
 import Home from './pages/Home.jsx'
 import Reader from './pages/Reader.jsx'
 import Search from './pages/Search.jsx'
+import Patrones from './pages/Patrones.jsx'
 import Sidebar from './components/Sidebar.jsx'
 
 export default function App() {
@@ -36,6 +37,7 @@ export default function App() {
           <NavLink to="/" end>Inicio</NavLink>
           <NavLink to="/leer/1">Leer</NavLink>
           <NavLink to="/buscar">Buscar</NavLink>
+          <NavLink to="/patrones">Patrones</NavLink>
         </nav>
       </header>
 
@@ -43,6 +45,7 @@ export default function App() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/buscar" element={<Search />} />
+          <Route path="/patrones" element={<Patrones />} />
           <Route path="/leer/:libroId" element={<><Sidebar /><Reader /></>} />
           <Route path="/leer/:libroId/:capituloNum" element={<><Sidebar /><Reader /></>} />
         </Routes>
