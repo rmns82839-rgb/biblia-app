@@ -41,8 +41,8 @@ export default function Home() {
       sub: `en ${fmt(contadores?.libros_con_jesus)} libros`,
       color: '#E07070',
       desc: 'Versículos donde Jesús habla directamente, narra parábolas, ora o aparece resucitado.',
-      to: '/leer/40/1',
-      cta: 'Ir a Mateo 1',
+      to: '/especiales',
+      cta: 'Ver todos →',
     },
     {
       icon: '🟠',
@@ -51,8 +51,8 @@ export default function Home() {
       sub: 'del Antiguo Testamento',
       color: '#FB923C',
       desc: 'Versículos proféticos sobre el Mesías identificados por teólogos, con su cumplimiento en el NT.',
-      to: '/leer/23/53',
-      cta: 'Ver Isaías 53',
+      to: '/especiales',
+      cta: 'Ver todas →',
     },
     {
       icon: '✅',
@@ -61,8 +61,8 @@ export default function Home() {
       sub: 'verificados históricamente',
       color: '#34D399',
       desc: 'Juicios de Jehová anunciados en la Biblia que ya se cumplieron en la historia.',
-      to: '/leer/23/13',
-      cta: 'Ver Isaías 13',
+      to: '/especiales',
+      cta: 'Ver todos →',
     },
     {
       icon: '⏳',
@@ -71,8 +71,8 @@ export default function Home() {
       sub: 'aún por cumplirse',
       color: '#F87171',
       desc: 'Juicios proféticos que según las Escrituras aún están por cumplirse en el tiempo del fin.',
-      to: '/leer/66/6',
-      cta: 'Ver Apocalipsis 6',
+      to: '/especiales',
+      cta: 'Ver todos →',
     },
     {
       icon: '🔶',
@@ -81,8 +81,8 @@ export default function Home() {
       sub: 'iniciados, pendientes de plenitud',
       color: '#FBBF24',
       desc: 'Juicios y profecías con cumplimiento inicial pero con plenitud futura aún pendiente.',
-      to: '/leer/29/2',
-      cta: 'Ver Joel 2',
+      to: '/especiales',
+      cta: 'Ver todos →',
     },
   ]
 
@@ -171,11 +171,12 @@ export default function Home() {
             { icon: '📖', label: 'Lector',       desc: 'Navega los 66 libros',         to: '/leer/1',   active: true },
             { icon: '🔍', label: 'Buscador',      desc: 'Busca en toda la Biblia',      to: '/buscar',   active: true },
             { icon: '📊', label: 'Patrones',      desc: 'Análisis de frecuencias',      to: '/patrones', active: true  },
-            { icon: '🕊️', label: 'Angelología',  desc: 'Ángeles en la Biblia',         to: '#',         active: false },
-            { icon: '✝️', label: 'Cristología',   desc: 'Referencias mesiánicas',       to: '#',         active: false },
-            { icon: '👑', label: 'Reyes',         desc: 'Línea de tiempo real',         to: '#',         active: false },
-            { icon: '🔢', label: 'Numerología',   desc: 'Números bíblicos',             to: '#',         active: false },
-            { icon: '📝', label: 'Bosquejos',     desc: 'Crea tu sermón',               to: '#',         active: false },
+            { icon: '🕊️', label: 'Angelología',  desc: 'Ángeles en la Biblia',         to: '/angeles',  active: true  },
+            { icon: '✝️', label: 'Cristología',   desc: 'Referencias mesiánicas',       to: '/cristologia', active: true },
+            { icon: '👑', label: 'Reyes',         desc: 'Línea de tiempo real',         to: '/reyes',    active: true  },
+            { icon: '🔢', label: 'Numerología',   desc: 'Números bíblicos',             to: '/numerologia', active: true },
+            { icon: '📝', label: 'Bosquejos',     desc: 'Crea tu sermón',               to: '/bosquejos',    active: true  },
+            { icon: '🕊️', label: 'Neumatología', desc: 'El Espíritu Santo en la Biblia', to: '/neumatologia', active: true  },
           ].map(m => (
             <Link key={m.label} to={m.to} style={{
               background: 'var(--surface)',

@@ -589,13 +589,162 @@ body::before {
 }
 
 /* ─── RESPONSIVE ────────────────────────────────────────── */
+
+/* ── Tablet (hasta 1024px) ── */
+@media (max-width: 1024px) {
+  .sidebar { width: 220px; }
+  .stats-bar { left: 220px; }
+  .verse-area { padding: 32px 32px 80px; }
+}
+
+/* ── Móvil (hasta 768px) ── */
 @media (max-width: 768px) {
-  .sidebar { display: none; }
-  .stats-bar { left: 0; }
-  .verse-area { padding: 24px 20px 80px; }
-  .chapter-nav { padding: 10px 16px; }
-  .search-page { padding: 24px 20px; }
+
+  /* Topbar */
+  .topbar { padding: 0 16px; gap: 10px; height: 52px; }
+  .topbar-logo { font-size: 17px; }
+  .topbar-logo span { display: none; }
+  .topbar-search { max-width: none; flex: 1; }
+  .topbar-search input { font-size: 13px; padding: 7px 12px 7px 32px; }
   .topbar-nav { display: none; }
+
+  /* Sidebar oculto en móvil — reemplazado por menú inferior */
+  .sidebar { display: none; }
+
+  /* Chapter nav — scroll horizontal en móvil */
+  .chapter-nav {
+    padding: 8px 12px;
+    gap: 5px;
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    top: 52px;
+  }
+  .chapter-nav::-webkit-scrollbar { display: none; }
+  .chapter-nav-title {
+    font-size: 15px;
+    white-space: nowrap;
+    flex-shrink: 0;
+    margin-right: 4px;
+  }
+  .cap-btn {
+    width: 28px; height: 28px;
+    font-size: 10px;
+    flex-shrink: 0;
+  }
+
+  /* Verse area */
+  .verse-area { padding: 20px 16px 100px; max-width: 100%; }
+  .verse-book-title { font-size: 32px; }
+  .verse-text { font-size: 17px; line-height: 1.7; }
+  .verse { gap: 8px; padding: 5px 6px; }
+  .verse-num { font-size: 9px; width: 20px; margin-top: 5px; }
+
+  /* Book info — 2 columnas en móvil */
+  .book-info {
+    margin: 0 12px 16px;
+    padding: 14px 16px;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+
+  /* Stats bar — scroll horizontal, sin left fixed */
+  .stats-bar {
+    left: 0;
+    padding: 8px 12px;
+    gap: 0;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+  }
+  .stats-bar::-webkit-scrollbar { display: none; }
+  .stat-item {
+    font-size: 9px;
+    gap: 4px;
+    white-space: nowrap;
+    flex-shrink: 0;
+    padding: 0 6px;
+  }
+  .stat-divider { flex-shrink: 0; }
+
+  /* Search page */
+  .search-page { padding: 20px 16px 100px; }
+  .search-controls { flex-direction: column; align-items: stretch; }
+  .search-select { width: 100%; }
+  .search-result-text { font-size: 16px; }
+
+  /* Home */
+  .home { padding: 32px 16px 100px; }
+  .home-title { font-size: clamp(36px, 10vw, 56px); }
+  .home-stats { gap: 28px; }
+  .home-stat-num { font-size: 32px; }
+
+  /* Freq grid */
+  .freq-grid { grid-template-columns: repeat(2, 1fr); }
+
+  /* Bottom nav bar para móvil */
+  .mobile-nav {
+    display: flex !important;
+  }
+}
+
+/* ── Móvil pequeño (hasta 400px) ── */
+@media (max-width: 400px) {
+  .cap-btn { width: 26px; height: 26px; font-size: 9px; }
+  .verse-text { font-size: 16px; }
+  .book-info { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .home-stats { gap: 20px; }
+}
+
+/* ── Barra de navegación inferior para móvil ── */
+.mobile-nav {
+  display: none;
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  z-index: 200;
+  height: 56px;
+  padding: 0 8px;
+  justify-content: space-around;
+  align-items: center;
+}
+
+.mobile-nav a, .mobile-nav button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  color: var(--text-muted);
+  text-decoration: none;
+  font-family: var(--mono);
+  font-size: 8px;
+  letter-spacing: 0.06em;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 6px 12px;
+  border-radius: var(--radius);
+  transition: color 0.15s;
+  flex: 1;
+  justify-content: center;
+}
+
+.mobile-nav a span.icon,
+.mobile-nav button span.icon { font-size: 18px; line-height: 1; }
+
+.mobile-nav a:hover, .mobile-nav button:hover,
+.mobile-nav a.active, .mobile-nav button.active {
+  color: var(--gold);
+  background: var(--gold-glow);
+}
+
+/* Ajuste del stats-bar cuando hay mobile nav */
+@media (max-width: 768px) {
+  .stats-bar { bottom: 56px; }
 }
 
 /* ─── ANIMATIONS ────────────────────────────────────────── */
