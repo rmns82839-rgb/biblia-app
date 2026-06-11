@@ -23,7 +23,7 @@ async function buscarReferencia(ref) {
   return rows[0] || null
 }
 
-async function buscarVersiculoTexto(termino) {
+async function buscarVersiculoTexto(termino, limite = 20) {
   if (!termino || termino.length < 3) return []
   return await sql`
     SELECT v.texto, l.nombre AS libro, l.abreviatura,
@@ -33,7 +33,7 @@ async function buscarVersiculoTexto(termino) {
     JOIN libros l    ON v.libro_id    = l.id
     WHERE to_tsvector('spanish', v.texto) @@ plainto_tsquery('spanish', ${termino})
     ORDER BY l.orden, c.numero, v.numero
-    LIMIT 8
+    LIMIT ${limite}
   `
 }
 
@@ -123,20 +123,21 @@ const uid = () => ++_id
 
 // ─── COMPONENTE: BUSCADOR DE CITAS ──────────────────────────
 function BuscadorCitas({ onAgregar, onCerrar }) {
-  const [input, setInput]       = useState('')
+  const [input, setInput]         = useState('')
   const [resultado, setResultado] = useState(null)
   const [sugerencias, setSugerencias] = useState([])
-  const [loading, setLoading]   = useState(false)
+  const [loading, setLoading]     = useState(false)
+  const [limite, setLimite]       = useState(20)
   const timer = useRef(null)
 
-  async function buscar(val) {
+  async function buscar(val, lim = 20) {
     if (!val.trim()) { setResultado(null); setSugerencias([]); return }
     setLoading(true)
     // Intenta referencia exacta primero
     const ref = await buscarReferencia(val)
     if (ref) { setResultado(ref); setSugerencias([]); setLoading(false); return }
-    // Si no, busca por texto
-    const sugs = await buscarVersiculoTexto(val)
+    // Busca por texto en toda la Biblia
+    const sugs = await buscarVersiculoTexto(val, lim)
     setSugerencias(sugs)
     setResultado(null)
     setLoading(false)
@@ -144,8 +145,8 @@ function BuscadorCitas({ onAgregar, onCerrar }) {
 
   useEffect(() => {
     clearTimeout(timer.current)
-    timer.current = setTimeout(() => buscar(input), 400)
-  }, [input])
+    timer.current = setTimeout(() => buscar(input, limite), 400)
+  }, [input, limite])
 
   const usar = (v) => {
     onAgregar({ ref: `${v.abreviatura} ${v.capitulo}:${v.versiculo}`, texto: v.texto })
@@ -154,62 +155,109 @@ function BuscadorCitas({ onAgregar, onCerrar }) {
 
   return (
     <div style={{
-      position: 'fixed', inset: 0, background: 'rgba(8,12,10,0.92)', zIndex: 9000,
-      display: 'flex', alignItems: 'flex-start', justifyContent: 'center', padding: '80px 20px',
+      position: 'fixed', inset: 0, background: 'rgba(8,12,10,0.95)', zIndex: 9000,
+      display: 'flex', alignItems: 'flex-start', justifyContent: 'center',
+      padding: '20px 12px',
+      overflowY: 'auto',
     }} onClick={onCerrar}>
       <div onClick={e => e.stopPropagation()} style={{
-        width: '100%', maxWidth: 560,
+        width: '100%', maxWidth: 580,
         background: 'var(--surface)', border: '1px solid var(--border)',
-        borderRadius: 8, overflow: 'hidden',
+        borderRadius: 10, overflow: 'hidden',
+        marginTop: 20,
       }}>
-        <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--border)' }}>
-          <div style={{ fontFamily: 'var(--mono)', fontSize: 10, color: 'var(--gold)', letterSpacing: '0.1em', marginBottom: 10 }}>INSERTAR CITA BÍBLICA</div>
+        {/* Header */}
+        <div style={{ padding: '16px 18px', borderBottom: '1px solid var(--border)', background: 'var(--surface2)' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+            <span style={{ fontFamily: 'var(--mono)', fontSize: 10, color: 'var(--gold)', letterSpacing: '0.1em' }}>
+              📖 INSERTAR CITA BÍBLICA
+            </span>
+            <button onClick={onCerrar} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: 18, padding: '0 4px', lineHeight: 1 }}>×</button>
+          </div>
           <input
             autoFocus
-            style={{ width: '100%', background: 'var(--surface2)', border: '1px solid var(--gold-dim)', color: 'var(--text)', fontFamily: 'var(--sans)', fontSize: 14, padding: '10px 14px', borderRadius: 6, outline: 'none' }}
-            placeholder='Ej: "Juan 3:16" o "porque de tal manera amó"'
+            style={{ width: '100%', background: 'var(--surface)', border: '1px solid var(--gold-dim)', color: 'var(--text)', fontFamily: 'var(--sans)', fontSize: 15, padding: '12px 14px', borderRadius: 6, outline: 'none', boxSizing: 'border-box' }}
+            placeholder='Ej: "Juan 3:16" o busca palabras del versículo...'
             value={input}
             onChange={e => setInput(e.target.value)}
           />
-          <div style={{ fontFamily: 'var(--mono)', fontSize: 9, color: 'var(--text-muted)', marginTop: 6, letterSpacing: '0.05em' }}>
-            Escribe una referencia (Libro Cap:Vers) o palabras del versículo
+          <div style={{ display: 'flex', gap: 8, marginTop: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+            <span style={{ fontFamily: 'var(--mono)', fontSize: 9, color: 'var(--text-muted)' }}>
+              Escribe referencia o palabras · Busca en toda la Biblia
+            </span>
+            <select
+              value={limite}
+              onChange={e => setLimite(Number(e.target.value))}
+              style={{ background: 'var(--surface2)', border: '1px solid var(--border2)', color: 'var(--text-muted)', fontFamily: 'var(--mono)', fontSize: 9, padding: '3px 8px', borderRadius: 4, outline: 'none', marginLeft: 'auto' }}
+            >
+              <option value={10}>10 resultados</option>
+              <option value={20}>20 resultados</option>
+              <option value={50}>50 resultados</option>
+              <option value={100}>Toda la Biblia</option>
+            </select>
           </div>
         </div>
 
-        <div style={{ padding: '8px 0', maxHeight: 320, overflowY: 'auto' }}>
-          {loading && <div style={{ padding: '20px', textAlign: 'center', fontFamily: 'var(--mono)', fontSize: 11, color: 'var(--text-muted)' }}>Buscando...</div>}
+        {/* Sugerencias rápidas */}
+        {!input && (
+          <div style={{ padding: '12px 18px', borderBottom: '1px solid var(--border)' }}>
+            <div style={{ fontFamily: 'var(--mono)', fontSize: 9, color: 'var(--text-muted)', letterSpacing: '0.08em', marginBottom: 8 }}>CITAS FRECUENTES</div>
+            <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+              {['Juan 3:16','Romanos 8:28','Filipenses 4:13','Salmos 23:1','Isaías 40:31','Mateo 28:19','Hebreos 11:1','Proverbios 3:5'].map(s => (
+                <button key={s} onClick={() => setInput(s)} style={{
+                  fontFamily: 'var(--mono)', fontSize: 10, color: 'var(--gold-dim)',
+                  background: 'var(--surface2)', border: '1px solid var(--border2)',
+                  borderRadius: 4, padding: '5px 10px', cursor: 'pointer', transition: 'all 0.15s',
+                }}
+                  onMouseEnter={e => { e.target.style.borderColor = 'var(--gold)'; e.target.style.color = 'var(--gold)' }}
+                  onMouseLeave={e => { e.target.style.borderColor = 'var(--border2)'; e.target.style.color = 'var(--gold-dim)' }}
+                >{s}</button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Resultados */}
+        <div style={{ maxHeight: '60vh', overflowY: 'auto' }}>
+          {loading && (
+            <div style={{ padding: '24px', textAlign: 'center', fontFamily: 'var(--mono)', fontSize: 11, color: 'var(--text-muted)' }}>
+              Buscando en toda la Biblia...
+            </div>
+          )}
 
           {resultado && (
-            <div onClick={() => usar(resultado)} style={{ padding: '14px 20px', cursor: 'pointer', borderBottom: '1px solid var(--border)' }}
-              onMouseEnter={e => e.currentTarget.style.background = 'var(--surface2)'}
-              onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+            <div onClick={() => usar(resultado)}
+              style={{ padding: '14px 18px', cursor: 'pointer', background: 'rgba(201,168,76,0.04)' }}
+              onMouseEnter={e => e.currentTarget.style.background = 'rgba(201,168,76,0.08)'}
+              onMouseLeave={e => e.currentTarget.style.background = 'rgba(201,168,76,0.04)'}
             >
               <div style={{ fontFamily: 'var(--mono)', fontSize: 10, color: 'var(--gold)', marginBottom: 6 }}>
-                {resultado.abreviatura} {resultado.capitulo}:{resultado.versiculo}
+                ✦ {resultado.abreviatura} {resultado.capitulo}:{resultado.versiculo} — {resultado.libro}
               </div>
-              <p style={{ fontFamily: 'var(--crimson)', fontSize: 15, color: 'var(--text)', lineHeight: 1.65, margin: 0 }}>
+              <p style={{ fontFamily: 'var(--crimson)', fontSize: 16, color: 'var(--text)', lineHeight: 1.65, margin: 0 }}>
                 {resultado.texto}
               </p>
             </div>
           )}
 
           {sugerencias.map((v, i) => (
-            <div key={i} onClick={() => usar(v)} style={{ padding: '12px 20px', cursor: 'pointer', borderBottom: '1px solid rgba(30,41,30,0.4)' }}
+            <div key={i} onClick={() => usar(v)}
+              style={{ padding: '12px 18px', cursor: 'pointer', borderBottom: '1px solid rgba(30,41,30,0.3)' }}
               onMouseEnter={e => e.currentTarget.style.background = 'var(--surface2)'}
               onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
             >
-              <div style={{ fontFamily: 'var(--mono)', fontSize: 10, color: 'var(--gold-dim)', marginBottom: 4 }}>
-                {v.abreviatura} {v.capitulo}:{v.versiculo}
+              <div style={{ fontFamily: 'var(--mono)', fontSize: 9, color: 'var(--gold-dim)', marginBottom: 4 }}>
+                {v.abreviatura} {v.capitulo}:{v.versiculo} — {v.libro}
               </div>
-              <p style={{ fontFamily: 'var(--crimson)', fontSize: 14, color: 'var(--text-dim)', lineHeight: 1.6, margin: 0 }}>
-                {v.texto.substring(0, 100)}...
+              <p style={{ fontFamily: 'var(--crimson)', fontSize: 15, color: 'var(--text-dim)', lineHeight: 1.6, margin: 0 }}>
+                {v.texto.length > 120 ? v.texto.substring(0, 120) + '...' : v.texto}
               </p>
             </div>
           ))}
 
           {!loading && !resultado && !sugerencias.length && input.length > 2 && (
-            <div style={{ padding: 20, textAlign: 'center', fontFamily: 'var(--mono)', fontSize: 11, color: 'var(--text-muted)' }}>
-              Sin resultados — intenta con otra referencia
+            <div style={{ padding: '24px', textAlign: 'center', fontFamily: 'var(--mono)', fontSize: 11, color: 'var(--text-muted)' }}>
+              Sin resultados — intenta con otras palabras o una referencia exacta
             </div>
           )}
         </div>
@@ -694,7 +742,7 @@ export default function Bosquejos() {
     <main style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
 
       {/* ─── TOPBAR DEL BOSQUEJO ─── */}
-      <div style={{ background: 'var(--surface)', borderBottom: '1px solid var(--border)', padding: '12px 24px', display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', position: 'sticky', top: 56, zIndex: 85 }}>
+      <div className="bosquejo-topbar" style={{ background: 'var(--surface)', borderBottom: '1px solid var(--border)', padding: '12px 24px', display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', position: 'sticky', top: 56, zIndex: 85 }}>
         <input
           style={{ flex: 1, minWidth: 200, background: 'none', border: 'none', color: 'var(--gold)', fontFamily: 'var(--crimson)', fontSize: 20, outline: 'none' }}
           placeholder="Título del sermón..."
@@ -715,7 +763,7 @@ export default function Bosquejos() {
       </div>
 
       {/* ─── NAV DE SECCIONES ─── */}
-      <div style={{ background: 'var(--surface2)', borderBottom: '1px solid var(--border)', padding: '0 24px', display: 'flex', gap: 2, overflowX: 'auto' }}>
+      <div className="bosquejo-secnav" style={{ background: 'var(--surface2)', borderBottom: '1px solid var(--border)', padding: '0 24px', display: 'flex', gap: 2, overflowX: 'auto' }}>
         {SECCIONES.map(s => (
           <button key={s.key} onClick={() => setSeccion(s.key)} style={{
             fontFamily: 'var(--mono)', fontSize: 10, padding: '10px 14px', border: 'none',
@@ -728,7 +776,7 @@ export default function Bosquejos() {
       </div>
 
       {/* ─── CONTENIDO ─── */}
-      <div style={{ flex: 1, padding: '28px 32px 100px', maxWidth: 760, overflowY: 'auto' }}>
+      <div className="bosquejo-content" style={{ flex: 1, padding: '28px 32px 100px', maxWidth: 760, overflowY: 'auto' }}>
 
         {/* SECCIÓN: PROPÓSITO */}
         {seccion === 'proposito' && (
@@ -740,6 +788,7 @@ export default function Bosquejos() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
               {PROPOSITOS.map(p => (
                 <div key={p.key} onClick={() => { actualizar('proposito', p.key); setSeccion('preliminares') }}
+                  className="proposito-card"
                   style={{
                     background: bosquejo.proposito === p.key ? `${p.color}12` : 'var(--surface)',
                     border: `1px solid ${bosquejo.proposito === p.key ? p.color : 'var(--border)'}`,
@@ -750,10 +799,10 @@ export default function Bosquejos() {
                   onMouseEnter={e => { if (bosquejo.proposito !== p.key) e.currentTarget.style.borderColor = p.color }}
                   onMouseLeave={e => { if (bosquejo.proposito !== p.key) e.currentTarget.style.borderColor = 'var(--border)' }}
                 >
-                  <span style={{ fontSize: 28, flexShrink: 0 }}>{p.icon}</span>
+                  <span className="proposito-card-icon" style={{ fontSize: 28, flexShrink: 0 }}>{p.icon}</span>
                   <div style={{ flex: 1 }}>
-                    <div style={{ fontFamily: 'var(--sans)', fontWeight: 600, fontSize: 16, color: p.color, marginBottom: 4 }}>{p.label}</div>
-                    <div style={{ fontSize: 13, color: 'var(--text-muted)', lineHeight: 1.5 }}>{p.desc}</div>
+                    <div className="proposito-card-label" style={{ fontFamily: 'var(--sans)', fontWeight: 600, fontSize: 16, color: p.color, marginBottom: 4 }}>{p.label}</div>
+                    <div className="proposito-card-desc" style={{ fontSize: 13, color: 'var(--text-muted)', lineHeight: 1.5 }}>{p.desc}</div>
                   </div>
                   {bosquejo.proposito === p.key && <span style={{ color: p.color, fontSize: 18 }}>✓</span>}
                 </div>

@@ -699,6 +699,24 @@ body::before {
   .home-stats { gap: 20px; }
 }
 
+/* ── Bosquejos responsive ── */
+@media (max-width: 768px) {
+  .bosquejo-topbar { padding: 10px 14px !important; gap: 8px !important; flex-wrap: wrap; }
+  .bosquejo-topbar input { font-size: 16px !important; }
+  .bosquejo-secnav { padding: 0 12px !important; }
+  .bosquejo-secnav button { padding: 10px 10px !important; font-size: 11px !important; }
+  .bosquejo-content { padding: 18px 16px 120px !important; }
+  .bosquejo-campo label { font-size: 11px !important; }
+  .bosquejo-campo input,
+  .bosquejo-campo textarea { font-size: 16px !important; padding: 12px 14px !important; }
+  .proposito-card { padding: 16px !important; }
+  .proposito-card-icon { font-size: 24px !important; }
+  .proposito-card-label { font-size: 17px !important; }
+  .proposito-card-desc { font-size: 13px !important; }
+  .punto-header { padding: 14px !important; }
+  .punto-titulo { font-size: 16px !important; }
+}
+
 /* ── Barra de navegación inferior para móvil ── */
 .mobile-nav {
   display: none;
